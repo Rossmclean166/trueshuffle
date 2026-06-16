@@ -238,11 +238,14 @@ async function api(path) {
 
 // LOAD TRACKS — go straight to the hardcoded playlist
 async function loadTracks() {
+  // DEBUG: show any errors visibly
+  window.onerror = function(msg) { setLoad("Error: " + msg, ""); }
   show('loading-screen');
   setLoad('Loading your playlist…', '');
 
   // Get playlist metadata first
-  const meta = await api('/playlists/' + PLAYLIST_ID + '?fields=name,tracks.total');
+  const meta = await api("/playlists/" + PLAYLIST_ID + "?fields=name,tracks.total");
+  if (!meta) { setLoad("API call failed", "Token may be invalid — try logging out and back in"); return; }
   if (!meta) return;
   plName = meta.name;
   const total = meta.tracks.total;
@@ -337,6 +340,16 @@ function logout() {
 function artists(t) { return t.artists ? t.artists.map(function(a){ return a.name; }).join(', ') : ''; }
 function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function shorten(s, n) { return s.length > n ? s.slice(0, n) + '…' : s; }
+
+function addLogoutBtn() {
+  const b = document.createElement('button');
+  b.textContent = 'Log out & try again';
+  b.className = 'btn-primary';
+  b.style.marginTop = '24px';
+  b.style.maxWidth = '240px';
+  b.onclick = logout;
+  document.getElementById('loading-screen').appendChild(b);
+}
 
 // INIT
 (async function() {
