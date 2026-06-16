@@ -353,14 +353,49 @@ function addLogoutBtn() {
 
 // INIT
 (async function() {
-  const params = new URLSearchParams(location.search);
-  const code = params.get('code'), state = params.get('state');
-  if (code && state === 'ts1') { show('loading-screen'); setLoad('Logging you in…', ''); await exchangeCode(code); return; }
-  const storedTok = localStorage.getItem('tok');
-  const tokExp = parseInt(localStorage.getItem('tok_exp') || '0');
-  if (storedTok && Date.now() < tokExp) { token = storedTok; loadTracks(); return; }
-  if (localStorage.getItem('rt')) { show('loading-screen'); setLoad('Reconnecting…', ''); const ok = await refreshToken(); if (ok) { loadTracks(); return; } }
-  show('login-screen');
+  try {
+    const params = new URLSearchParams(location.search);
+    const code = params.get('code'), state = params.get('state');
+    const url = location.href;
+
+    // Show login screen immediately, then check what to do
+    show('login-screen');
+
+    if (code && state === 'ts1') {
+      show('loading-screen');
+      setLoad('Logging you in…', 'Exchanging auth code…');
+      await exchangeCode(code);
+      return;
+    }
+
+    const storedTok = localStorage.getItem('tok');
+    const tokExp = parseInt(localStorage.getItem('tok_exp') || '0');
+    if (storedTok && Date.now() < tokExp) {
+      token = storedTok;
+      await loadTracks();
+      return;
+    }
+
+    const rt = localStorage.getItem('rt');
+    if (rt) {
+      show('loading-screen');
+      setLoad('Reconnecting…', '');
+      const ok = await refreshToken();
+      if (ok) { await loadTracks(); return; }
+    }
+
+    show('login-screen');
+  } catch(e) {
+    show('loading-screen');
+    setLoad('Error: ' + e.message, e.stack ? e.stack.slice(0,100) : '');
+    const b = document.createElement('button');
+    b.textContent = 'Back to login';
+    b.className = 'btn-primary';
+    b.style.marginTop = '24px';
+    b.style.maxWidth = '240px';
+    b.onclick = function(){ show('login-screen'); };
+    document.getElementById('loading-screen').appendChild(b);
+  }
 })();
 </script>
 </body>
