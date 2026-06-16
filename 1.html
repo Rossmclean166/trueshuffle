@@ -233,7 +233,7 @@ async function go() {
   if (!me) return;
   setLoad('Loading playlist…', 'Hi ' + (me.display_name || 'there') + '!');
 
-  const meta = await api('/playlists/' + PLAYLIST_ID + '?fields=name,tracks(total)');
+  const meta = await api('/playlists/' + PLAYLIST_ID);
   if (!meta) return;
   if (!meta.tracks || meta.tracks.total === undefined) {
     setLoad('Unexpected response', JSON.stringify(meta).slice(0,250));
