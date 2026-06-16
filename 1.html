@@ -235,7 +235,7 @@ async function go() {
 
   const meta = await api('/playlists/' + PLAYLIST_ID);
   if (!meta) return;
-  if (!meta.tracks || meta.tracks.total === undefined) {
+  if (!meta || !meta.tracks || meta.tracks.total === undefined) {
     setLoad('Unexpected response', JSON.stringify(meta).slice(0,250));
     showRetry(); return;
   }
@@ -245,7 +245,7 @@ async function go() {
   showProg();
   setLoad('Fetching ' + total + ' songs…', '');
 
-  let all = [], url = '/playlists/' + PLAYLIST_ID + '/tracks?limit=100&fields=next,items(track(id,name,uri,album(images),artists(name)))';
+  let all = [], url = '/playlists/' + PLAYLIST_ID + '/tracks?limit=100';
   while (url) {
     const d = await api(url.replace('https://api.spotify.com/v1',''));
     if (!d) return;
